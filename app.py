@@ -14,21 +14,28 @@ from flask import (Flask, request, render_template_string, render_template,
                    send_from_directory)
 from werkzeug.utils import secure_filename
 
+# Import HTB Challenge blueprint
+from challenge import htb as htb_blueprint, init_db as init_htb_db
+
 app = Flask(__name__)
 app.secret_key = 'super_secret_key_change_in_production'
 app.config['UPLOAD_FOLDER'] = '/tmp/vulnlab_uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# Register HTB Challenge blueprint
+app.register_blueprint(htb_blueprint, url_prefix='/htb')
+
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-DATABASE = '/tmp/vulnlab.db'
+app.config['DATABASE'] = '/tmp/vulnlab.db'
+app.config['HTB_DATABASE'] = '/tmp/htb_challenge.db'
 
 # ============================================================
 # Database helpers
 # ============================================================
 
 def get_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(app.config['DATABASE'])
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -240,6 +247,12 @@ HOME_CONTENT = '''
         <span class="difficulty diff-high">High</span>
         <p>Inject malicious XML entities to read files or perform SSRF.</p>
         <a href="/xxe" class="btn btn-blue">Start Challenge</a>
+    </div>
+    <div class="card" style="border-color: #f85149; border-width: 2px;">
+        <h2 style="color: #f85149;">🏴 HTB Challenge: Corporate Breach</h2>
+        <span class="difficulty diff-high">Insane</span>
+        <p>Chain 8 vulnerabilities: Info Leak → IDOR → SQLi → XSS → CSRF → SSRF → CMDi → RCE. HackTheBox style!</p>
+        <a href="/htb" class="btn" style="background: #f85149; color: white;">Start Challenge</a>
     </div>
 </div>
 '''
@@ -822,8 +835,16 @@ def api_search():
 # ============================================================
 
 if __name__ == '__main__':
-    init_db()
+    with app.app_context():
+        init_db()
+        init_htb_db()
+    # Start HTB security bot
+    from challenge import security_bot
+    import threading
+    bot_thread = threading.Thread(target=security_bot, daemon=True)
+    bot_thread.start()
     print("VulnLab starting...")
+    print("HTB Challenge: Corporate Breach enabled at /htb")
     print("WARNING: This is an intentionally vulnerable application!")
     print("Do NOT expose to untrusted networks.")
     app.run(host='0.0.0.0', port=5000, debug=True)

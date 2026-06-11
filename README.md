@@ -21,6 +21,22 @@ VulnLab is a deliberately vulnerable web application built with Python Flask for
 | Server-Side Request Forgery (SSRF) | Medium | `/ssrf` |
 | XML External Entity (XXE) | High | `/xxe` |
 
+## 🏴 HTB Challenge: Corporate Breach
+
+A HackTheBox-style multi-step attack chain that requires chaining **8 vulnerabilities** to achieve Remote Code Execution.
+
+**Attack Chain:**
+1. **Info Leak** → Discover debug endpoint exposing internal API routes
+2. **IDOR** → Access other users' profiles, find password hints
+3. **SQL Injection** → Bypass authentication using leaked credentials
+4. **Stored XSS** → Inject payload to steal admin bot's cookies
+5. **CSRF** → Use stolen admin access to enable developer tools
+6. **SSRF** → Scan internal network via admin health check
+7. **Command Injection** → Exploit dev server's ping tool via SSRF
+8. **RCE** → Read the final flag
+
+Access at `/htb` after starting the application.
+
 ## Quick Start
 
 ```bash
