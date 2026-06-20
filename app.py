@@ -173,7 +173,7 @@ BASE_TEMPLATE = '''
         {% endfor %}
         {% endif %}
         {% endwith %}
-        {{ content }}
+        {{ content | safe }}
     </div>
 </body>
 </html>
