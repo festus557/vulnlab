@@ -161,7 +161,7 @@ code { background:{{ colors.bg }}; padding:1px 5px; border-radius:3px; font-size
 {% endfor %}
 {% endif %}
 {% endwith %}
-{{ content }}
+{{ content | safe }}
 </div>
 </body>
 </html>
